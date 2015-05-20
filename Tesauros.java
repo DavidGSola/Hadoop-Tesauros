@@ -23,12 +23,7 @@ public class Tesauros
     {
         private final static IntWritable one = new IntWritable(1);
         private Text word = new Text();
-
-        /*
-            Patrones para eliminar los símbolos del texto
-        */
-        static final Pattern ptrnSimbolos = Pattern.compile("[\\.\\s]?[\\s+,\\*\\+\\:\\;\\?\\!><]+");
-        
+ 
         /*
             Set con las parejas calculadas
         */
@@ -71,35 +66,36 @@ public class Tesauros
 
             if(!esCabecera)
             {
-                // Limpiamos los símbolos del texto
-                text = ptrnSimbolos.matcher(text).replaceAll("~|~");
-                
                 // Recorremos los Tokens y los vamos añadiendo a una lista con todas las
                 // palabras de esta línea
-                StringTokenizer itr = new StringTokenizer(text,"~|~");
+                StringTokenizer itr = new StringTokenizer(text);
                 while (itr.hasMoreTokens())
-                    palabrasLinea.add(itr.nextToken());
+                {
+                    String aux = itr.nextToken();
+                    aux = aux.toLowerCase();
+                    aux = aux.replaceAll("[^a-z]","");
+                    if(aux.length() > 0)
+                        palabrasLinea.add(aux);
+                }
                 
                 // Borramos las palabras sin significado a partir del Array
                 palabrasLinea.removeAll(stopWords);
                 
                 // Obtenemos el índice de la última palabra de las anteriores ejecuciones
-                int lastIndex = palabrasTotales.size() == 0 ? 0 : palabrasTotales.size()-1;
+                int lastIndex = palabrasTotales.size();
 
                 // Añadimos las palabras de esta línea a las palabras totales
                 palabrasTotales.addAll(palabrasLinea);
-                
-                // Reccorremos el conjunto de palabras totales evitando repetir parejas que ya hemos
+
+                // Recorremos el conjunto de palabras totales evitando repetir parejas que ya hemos
                 // realizado en iteraciones anteriores (para ello utilizamos el lastIndex calculado)
                 for(int i=0; i<palabrasTotales.size(); i++)
                     for(int j=lastIndex; j<palabrasTotales.size(); j++)
                         if(i != j)
                         {
-                            String concat;
-                            if(palabrasTotales.get(i).compareTo(palabrasTotales.get(j)) <= 0)
-                                concat = palabrasTotales.get(i) + " | " + palabrasTotales.get(j);
-                            else
-                                concat = palabrasTotales.get(j) + " | " + palabrasTotales.get(i);
+                            String concat = palabrasTotales.get(i).compareTo(palabrasTotales.get(j)) <= 0 ?
+                                palabrasTotales.get(i) + " | " + palabrasTotales.get(j) : 
+                                palabrasTotales.get(j) + " | " + palabrasTotales.get(i);
 
                             if(!parejas.contains(concat))
                             {
